@@ -18,11 +18,11 @@ def get_crypto_value(base_currency="BTC", currency="USD", target_date=None):
     return data['base'], data['currency'], data['amount']
 
 
-def crypto_graphic(start_date, end_date=datetime.today(), months_interval=1, base_currency="BTC", currency="USD"):
+def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30, base_currency="BTC", currency="USD"):
     date_time = [start_date]
     date_format = "%Y-%m-%d"
     while True:
-        new_date = datetime.strptime(date_time[-1], date_format) + relativedelta(months=months_interval)
+        new_date = datetime.strptime(date_time[-1], date_format) + relativedelta(days=days_interval)
         if new_date > end_date:
             date_time.append(end_date.strftime(date_format))
             break
@@ -38,11 +38,11 @@ def crypto_graphic(start_date, end_date=datetime.today(), months_interval=1, bas
 
     DF = pd.DataFrame({"value": data})
     DF = DF.set_index(date_time)
-    plt.plot(DF)
+    plt.plot(DF, "y")
     plt.ylabel(f"{base_currency}-{currency}")
     plt.gcf().autofmt_xdate()
     plt.show()
 
 
 
-crypto_graphic("2021-02-02")
+crypto_graphic("2021-02-02", days_interval=30, base_currency="BTC")
