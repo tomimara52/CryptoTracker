@@ -1,6 +1,8 @@
 import requests
 import matplotlib.pyplot as plt
-from datetime import date
+from datetime import datetime
+import pandas as pd
+from dateutil.relativedelta import *
 
 
 def get_crypto_value(base_currency="BTC", currency="USD", target_date=None):
@@ -10,24 +12,37 @@ def get_crypto_value(base_currency="BTC", currency="USD", target_date=None):
 
     url = f"https://api.coinbase.com/v2/prices/{base_currency}-{currency}/spot"
     response = requests.get(url, params=params).json()
-    return response
+    if response.get("errors"):
+        raise Exception(response['errors'][0]["message"])
+    data = response['data']
+    return data['base'], data['currency'], data['amount']
 
 
-def print_crypto_value(json):
-    if json.get('errors'):
-        print(json['errors'][0]['message'])
-        return
+def crypto_graphic(start_date, end_date=datetime.today(), months_interval=1, base_currency="BTC", currency="USD"):
+    date_time = [start_date]
+    date_format = "%Y-%m-%d"
+    while True:
+        new_date = datetime.strptime(date_time[-1], date_format) + relativedelta(months=months_interval)
+        if new_date > end_date:
+            date_time.append(end_date.strftime(date_format))
+            break
+        date_time.append(new_date.strftime(date_format))
 
-    data = json["data"]
-    print(f"{data['base']}-{data['currency']}:{data['amount']}")
+    date_time = pd.to_datetime(date_time, yearfirst=True)
+
+    data = []
+    for date_ in date_time:
+        amount = get_crypto_value(base_currency, currency, date_)[-1]
+        data.append(float(amount))
 
 
-def crypto_graphic(start_date, end_date=date.today(), months_interval=1, base_currency="BTC", currency="USD"):
-    pass
+    DF = pd.DataFrame({"value": data})
+    DF = DF.set_index(date_time)
+    plt.plot(DF)
+    plt.ylabel(f"{base_currency}-{currency}")
+    plt.gcf().autofmt_xdate()
+    plt.show()
 
 
 
-# print_crypto_value(get_crypto_value(target_date="2020-02-02"))
-plt.plot([1, 2, 3, 4],[10,20,30,40,50])
-plt.ylabel('some numbers')
-plt.show()
+crypto_graphic("2021-02-02")
