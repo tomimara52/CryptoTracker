@@ -5,13 +5,18 @@ import pandas as pd
 from dateutil.relativedelta import *
 
 
-def get_crypto_value(base_currency="BTC", currency="USD", target_date=None):
+def get_crypto_value(base_currency="BTC", currency="USD", target_date=None, session=None):
     params = {}
     if target_date is not None:
         params = {'date': target_date}
 
     url = f"https://api.coinbase.com/v2/prices/{base_currency}-{currency}/spot"
-    response = requests.get(url, params=params).json()
+
+    if session is None:
+        response = requests.get(url, params=params).json()
+    else:
+        response = session.get(url, params=params).json()
+
     if response.get("errors"):
         raise Exception(response['errors'][0]["message"])
     data = response['data']
@@ -29,20 +34,21 @@ def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30, base
     date_format = "%Y-%m-%d"
 
     # while 'new_date' is less than 'end_date' keep adding dates and amounts to 'date_time' and 'data'.
-    while True:
-        new_date = datetime.strptime(date_time[-1], date_format) + relativedelta(days=days_interval)
+    with requests.Session() as session:
+        while True:
+            new_date = datetime.strptime(date_time[-1], date_format) + relativedelta(days=days_interval)
 
-        if new_date > end_date:
-            end_date_str = end_date.strftime(date_format)
-            date_time.append(end_date_str)
-            amount = get_crypto_value(base_currency, currency, end_date_str)[-1]
+            if new_date > end_date:
+                end_date_str = end_date.strftime(date_format)
+                date_time.append(end_date_str)
+                amount = get_crypto_value(base_currency, currency, end_date_str, session)[-1]
+                data.append(float(amount))
+                break
+
+            new_date_str = new_date.strftime(date_format)
+            date_time.append(new_date_str)
+            amount = get_crypto_value(base_currency, currency, new_date_str, session)[-1]
             data.append(float(amount))
-            break
-
-        new_date_str = new_date.strftime(date_format)
-        date_time.append(new_date_str)
-        amount = get_crypto_value(base_currency, currency, new_date_str)[-1]
-        data.append(float(amount))
 
     # create a data frame with the amounts in the rows and the dates as index. Then plot it.
     date_time = pd.to_datetime(date_time, yearfirst=True)
