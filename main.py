@@ -31,7 +31,7 @@ async def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30
 
     date_format = "%Y-%m-%d"
 
-    # while 'new_date' is less than 'end_date' keep adding dates and amounts to 'date_time' and 'data'.
+    # while 'new_date' is less than 'end_date' keep adding dates and amounts to 'date_time'.
 
     async with aiohttp.ClientSession() as session:
         tasks = []
@@ -53,6 +53,7 @@ async def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30
             async_func = asyncio.ensure_future(get_crypto_value(session, base_currency, currency, new_date_str))
             tasks.append(async_func)
 
+        # gather all the amounts returned in 'data' list.
         data = await asyncio.gather(*tasks)
 
 
@@ -67,4 +68,4 @@ async def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30
 
 
 
-asyncio.run(crypto_graphic("2021-02-02", days_interval=1, base_currency="BTC"))
+asyncio.run(crypto_graphic("2021-02-02", days_interval=1, base_currency="ETC"))
