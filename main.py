@@ -61,5 +61,5 @@ def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30, base
 
 
 
-crypto_graphic("2021-02-02", days_interval=30, base_currency="BTC")
+crypto_graphic("2021-02-02", days_interval=1, base_currency="BTC")
 # print(get_crypto_value(target_date='2021-05-19'))
