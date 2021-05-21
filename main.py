@@ -6,8 +6,8 @@ import json
 import asyncio
 import aiohttp
 
-DATE_FORMAT = "%Y-%m-%d"
 
+DATE_FORMAT = "%Y-%m-%d"
 
 def str_to_datetime(str_date: str):
     return datetime.strptime(str_date, DATE_FORMAT)
@@ -34,7 +34,7 @@ async def get_crypto_value(session, base_currency="BTC", currency="USD", target_
         return float(data['amount'])
 
 
-async def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30, base_currency="BTC", currency="USD"):
+async def crypto_values(start_date, end_date=datetime.today(), days_interval=30, base_currency="BTC", currency="USD"):
     # 'date_time' is a list of dates in string format.
     date_time = [start_date]
 
@@ -63,12 +63,14 @@ async def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30
 
         # gather all the amounts returned in 'data' list.
         data = await asyncio.gather(*tasks)
+        return date_time, data
 
 
+def make_graphic(dates, amounts, base_currency="BTC", currency="USD"):
     # create a data frame with the amounts in the rows and the dates as index. Then plot it.
-    date_time = pd.to_datetime(date_time, yearfirst=True)
-    DF = pd.DataFrame({"value": data})
-    DF = DF.set_index(date_time)
+    dates = pd.to_datetime(dates, yearfirst=True)
+    DF = pd.DataFrame({"value": amounts})
+    DF = DF.set_index(dates)
     plt.plot(DF, "y")
     plt.ylabel(f"{base_currency}-{currency}")
     plt.gcf().autofmt_xdate()
@@ -78,4 +80,5 @@ async def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30
 if __name__ == "__main__":
     base_currency = input("Which crypto you want to look for? ")
     start_date = input("Since when do you want the data from? (YYYY-MM-DD) ")
-    asyncio.run(crypto_graphic(start_date, days_interval=1, base_currency=base_currency))
+    plot_values = asyncio.run(crypto_values(start_date, days_interval=1, base_currency=base_currency))
+    make_graphic(*plot_values, base_currency)
