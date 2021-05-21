@@ -73,3 +73,9 @@ async def crypto_graphic(start_date, end_date=datetime.today(), days_interval=30
     plt.ylabel(f"{base_currency}-{currency}")
     plt.gcf().autofmt_xdate()
     plt.show()
+
+
+if __name__ == "__main__":
+    base_currency = input("Which crypto you want to look for? ")
+    start_date = input("Since when do you want the data from? (YYYY-MM-DD) ")
+    asyncio.run(crypto_graphic(start_date, days_interval=1, base_currency=base_currency))
